@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:16
+    environment: {POSTGRES_DB: sakurapay, POSTGRES_USER: sakurapay_user, POSTGRES_PASSWORD: change-me}
+    volumes: [pgdata:/var/lib/postgresql/data]
+  api:
+    build: {context: .., dockerfile: deployment/Dockerfile}
+    environment: {DATABASE_URL: 'postgresql+psycopg://sakurapay_user:change-me@db:5432/sakurapay', JWT_SECRET_KEY: change-me}
+    ports: ['8000:8000']
+    depends_on: [db]
+  worker:
+    build: {context: .., dockerfile: deployment/Dockerfile}
+    command: python -m app.workers.main
+    environment: {DATABASE_URL: 'postgresql+psycopg://sakurapay_user:change-me@db:5432/sakurapay', JWT_SECRET_KEY: change-me}
+    depends_on: [db]
+volumes: {pgdata: {}}
